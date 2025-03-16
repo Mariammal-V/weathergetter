@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        #weather {
+            display: none;
+        }
+        .loader {
+            display: none;
+            border: 5px solid white;
+            border-top: 5px solid transparent;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h2>Weather App 🌤</h2>
+        <p>Click the button to get weather at your location</p>
+        <button class="btn btn-primary" onclick="getLocation()">Get Weather</button>
+
+        <div class="loader" id="loader"></div>
+
+        <div id="weather" class="mt-4">
+            <h3 id="city"></h3>
+            <p><strong>Temperature:</strong> <span id="temperature"></span>°C</p>
+            <p><strong>Description:</strong> <span id="description"></span></p>
+            <p><strong>Humidity:</strong> <span id="humidity"></span>%</p>
+            <p><strong>Wind Speed:</strong> <span id="wind_speed"></span> m/s</p>
+        </div>
+    </div>
+
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                document.getElementById("loader").style.display = "block";
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function showPosition(position) {
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+            
+            fetch(`/weather?lat=${lat}&lon=${lon}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("loader").style.display = "none";
+
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        document.getElementById("weather").style.display = "block";
+                        document.getElementById("city").innerText = `Weather in ${data.city}`;
+                        document.getElementById("temperature").innerText = data.temperature;
+                        document.getElementById("description").innerText = data.description;
+                        document.getElementById("humidity").innerText = data.humidity;
+                        document.getElementById("wind_speed").innerText = data.wind_speed;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("loader").style.display = "none";
+                    alert("Error fetching weather. Try again!");
+                });
+        }
+
+        function showError(error) {
+            document.getElementById("loader").style.display = "none";
+            alert("Error fetching location: " + error.message);
+        }
+    </script>
+
+</body>
+</html>
